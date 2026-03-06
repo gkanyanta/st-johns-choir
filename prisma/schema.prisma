@@ -1,0 +1,329 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  SUPER_ADMIN
+  CHOIR_DIRECTOR
+  SECRETARY
+  TREASURER
+  SECTION_LEADER
+  MEMBER
+}
+
+enum MemberStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  TRANSFERRED
+  ARCHIVED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+  OTHER
+}
+
+enum AttendanceStatus {
+  PRESENT
+  LATE
+  ABSENT
+  EXCUSED
+}
+
+enum EventType {
+  WEEKLY_REHEARSAL
+  SUNDAY_SERVICE
+  MIDWEEK_PRACTICE
+  WEDDING_MINISTRATION
+  FUNERAL_MINISTRATION
+  CONFERENCE_CRUSADE
+  SPECIAL_EVENT
+  SECTIONAL_REHEARSAL
+}
+
+enum EventStatus {
+  UPCOMING
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  MOBILE_MONEY
+  BANK_TRANSFER
+  OTHER
+}
+
+enum PaymentCategory {
+  PENALTY_PAYMENT
+  MEMBERSHIP_FEE
+  UNIFORM_CONTRIBUTION
+  WELFARE_CONTRIBUTION
+  EVENT_CONTRIBUTION
+  OTHER
+}
+
+enum PenaltyType {
+  LATE_COMING
+  ABSENCE
+  MISSED_ASSIGNMENT
+  UNIFORM_FINE
+  DISCIPLINARY
+  CUSTOM
+}
+
+enum PenaltyStatus {
+  UNPAID
+  PARTIALLY_PAID
+  PAID
+  WAIVED
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  username      String    @unique
+  passwordHash  String
+  role          Role      @default(MEMBER)
+  memberId      String?   @unique
+  member        Member?   @relation(fields: [memberId], references: [id])
+  isActive      Boolean   @default(true)
+  lastLogin     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  auditLogs         AuditLog[]
+  recordedPayments  Payment[]     @relation("RecordedBy")
+  createdSessions   AttendanceSession[] @relation("CreatedBy")
+  announcements     Announcement[]
+
+  @@map("users")
+}
+
+model Member {
+  id                  String        @id @default(uuid())
+  firstName           String
+  lastName            String
+  otherNames          String?
+  gender              Gender
+  dateOfBirth         DateTime?
+  phone               String
+  altPhone            String?
+  email               String?
+  residentialAddress  String?
+  nrcIdNumber         String?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  dateJoined          DateTime      @default(now())
+  sectionId           String
+  section             Section       @relation(fields: [sectionId], references: [id])
+  maritalStatus       MaritalStatus?
+  occupation          String?
+  baptismStatus       String?
+  churchName          String?
+  profilePhoto        String?
+  status              MemberStatus  @default(ACTIVE)
+  notes               String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  user                User?
+  attendanceRecords   AttendanceRecord[]
+  penalties           Penalty[]
+  payments            Payment[]
+
+  @@map("members")
+}
+
+model Section {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  sortOrder Int       @default(0)
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  members   Member[]
+  attendanceSessions AttendanceSession[] @relation("SessionSections")
+
+  @@map("sections")
+}
+
+model AttendanceSession {
+  id              String      @id @default(uuid())
+  date            DateTime
+  eventType       EventType
+  venue           String?
+  startTime       String?
+  reportingTime   String?
+  notes           String?
+  isFinalized     Boolean     @default(false)
+  createdById     String
+  createdBy       User        @relation("CreatedBy", fields: [createdById], references: [id])
+  sections        Section[]   @relation("SessionSections")
+  eventId         String?
+  event           Event?      @relation(fields: [eventId], references: [id])
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  records         AttendanceRecord[]
+
+  @@map("attendance_sessions")
+}
+
+model AttendanceRecord {
+  id              String           @id @default(uuid())
+  sessionId       String
+  session         AttendanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  memberId        String
+  member          Member           @relation(fields: [memberId], references: [id])
+  status          AttendanceStatus @default(ABSENT)
+  checkInTime     String?
+  minutesLate     Int?
+  notes           String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@unique([sessionId, memberId])
+  @@map("attendance_records")
+}
+
+model PenaltyRule {
+  id              String      @id @default(uuid())
+  name            String
+  penaltyType     PenaltyType
+  amount          Decimal     @db.Decimal(10, 2)
+  gracePeriodMin  Int         @default(0)
+  applyAfterGrace Boolean    @default(true)
+  isActive        Boolean     @default(true)
+  effectiveFrom   DateTime    @default(now())
+  description     String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  penalties       Penalty[]
+
+  @@map("penalty_rules")
+}
+
+model Penalty {
+  id              String        @id @default(uuid())
+  memberId        String
+  member          Member        @relation(fields: [memberId], references: [id])
+  penaltyRuleId   String?
+  penaltyRule     PenaltyRule?  @relation(fields: [penaltyRuleId], references: [id])
+  penaltyType     PenaltyType
+  amount          Decimal       @db.Decimal(10, 2)
+  amountPaid      Decimal       @default(0) @db.Decimal(10, 2)
+  balance         Decimal       @db.Decimal(10, 2)
+  status          PenaltyStatus @default(UNPAID)
+  reason          String?
+  sessionDate     DateTime?
+  waivedAmount    Decimal       @default(0) @db.Decimal(10, 2)
+  waiverReason    String?
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  payments        Payment[]
+
+  @@map("penalties")
+}
+
+model Payment {
+  id              String          @id @default(uuid())
+  memberId        String
+  member          Member          @relation(fields: [memberId], references: [id])
+  category        PaymentCategory
+  penaltyId       String?
+  penalty         Penalty?        @relation(fields: [penaltyId], references: [id])
+  amountDue       Decimal         @db.Decimal(10, 2)
+  amountPaid      Decimal         @db.Decimal(10, 2)
+  balance         Decimal         @default(0) @db.Decimal(10, 2)
+  paymentDate     DateTime        @default(now())
+  paymentMethod   PaymentMethod
+  reference       String?
+  notes           String?
+  recordedById    String
+  recordedBy      User            @relation("RecordedBy", fields: [recordedById], references: [id])
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@map("payments")
+}
+
+model Event {
+  id              String      @id @default(uuid())
+  title           String
+  eventType       EventType
+  date            DateTime
+  endDate         DateTime?
+  time            String?
+  venue           String?
+  description     String?
+  requiredSections String[]
+  status          EventStatus @default(UPCOMING)
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  attendanceSessions AttendanceSession[]
+
+  @@map("events")
+}
+
+model Announcement {
+  id            String    @id @default(uuid())
+  title         String
+  content       String
+  audience      String    @default("ALL")
+  sectionId     String?
+  role          Role?
+  publishDate   DateTime  @default(now())
+  expiryDate    DateTime?
+  isUrgent      Boolean   @default(false)
+  createdById   String
+  createdBy     User      @relation(fields: [createdById], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("announcements")
+}
+
+model AuditLog {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  action      String
+  entity      String
+  entityId    String?
+  details     String?
+  ipAddress   String?
+  createdAt   DateTime  @default(now())
+
+  @@map("audit_logs")
+}
+
+model Setting {
+  id        String    @id @default(uuid())
+  key       String    @unique
+  value     String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("settings")
+}

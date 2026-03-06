@@ -1,7 +1,18 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  serverExternalPackages: ["bcryptjs"],
+  images: {
+    domains: ["localhost"],
+  },
+  headers: async () => [
+    {
+      source: "/manifest.json",
+      headers: [
+        { key: "Content-Type", value: "application/manifest+json" },
+      ],
+    },
+  ],
 };
 
 export default nextConfig;

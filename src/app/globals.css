@@ -127,3 +127,21 @@
     @apply font-sans;
   }
 }
+
+/* Mobile safe area for bottom navigation */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Prevent text selection on tap targets for mobile */
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}

@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
           createdBy: { select: { id: true, username: true } },
           sections: true,
           event: { select: { id: true, title: true } },
+          records: { select: { status: true } },
           _count: { select: { records: true } },
         },
         orderBy: { date: sortOrder },

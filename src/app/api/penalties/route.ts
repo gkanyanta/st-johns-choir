@@ -18,7 +18,11 @@ export async function GET(request: NextRequest) {
     const where: Prisma.PenaltyWhereInput = {};
 
     if (status) {
-      where.status = status as Prisma.EnumPenaltyStatusFilter["equals"];
+      if (status.includes(",")) {
+        where.status = { in: status.split(",") as Array<"UNPAID" | "PARTIALLY_PAID" | "PAID" | "WAIVED"> };
+      } else {
+        where.status = status as Prisma.EnumPenaltyStatusFilter["equals"];
+      }
     }
 
     if (memberId) {

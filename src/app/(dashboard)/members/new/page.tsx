@@ -13,14 +13,13 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/shared/loading";
 import { MEMBER_STATUS_LABELS } from "@/lib/constants";
 
-interface Section {
-  id: string;
-  name: string;
+interface SectionsResponse {
+  sections: { id: string; name: string }[];
 }
 
 export default function AddMemberPage() {
   const router = useRouter();
-  const { data: sections } = useApi<Section[]>("/api/sections");
+  const { data: sectionsData } = useApi<SectionsResponse>("/api/sections");
 
   const [form, setForm] = useState({
     firstName: "",
@@ -29,10 +28,10 @@ export default function AddMemberPage() {
     phone: "",
     dateOfBirth: "",
     gender: "",
-    address: "",
+    residentialAddress: "",
     sectionId: "",
     status: "ACTIVE",
-    joinDate: "",
+    dateJoined: "",
     notes: "",
   });
 
@@ -57,11 +56,12 @@ export default function AddMemberPage() {
         body: JSON.stringify({
           ...form,
           dateOfBirth: form.dateOfBirth || undefined,
-          joinDate: form.joinDate || undefined,
+          dateJoined: form.dateJoined || undefined,
           email: form.email || undefined,
           phone: form.phone || undefined,
-          address: form.address || undefined,
+          residentialAddress: form.residentialAddress || undefined,
           notes: form.notes || undefined,
+          gender: form.gender || undefined,
         }),
       });
 
@@ -70,8 +70,8 @@ export default function AddMemberPage() {
         throw new Error(data.error || "Failed to create member");
       }
 
-      const member = await res.json();
-      router.push(`/members/${member.id}`);
+      const result = await res.json();
+      router.push(`/members/${result.member.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -130,12 +130,13 @@ export default function AddMemberPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
+                <Label htmlFor="phone">Phone *</Label>
                 <Input
                   id="phone"
                   name="phone"
                   value={form.phone}
                   onChange={handleChange}
+                  required
                   placeholder="+260..."
                 />
               </div>
@@ -152,12 +153,13 @@ export default function AddMemberPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="gender">Gender</Label>
+                <Label htmlFor="gender">Gender *</Label>
                 <Select
                   id="gender"
                   name="gender"
                   value={form.gender}
                   onChange={handleChange}
+                  required
                 >
                   <option value="">Select gender</option>
                   <option value="MALE">Male</option>
@@ -175,7 +177,7 @@ export default function AddMemberPage() {
                   required
                 >
                   <option value="">Select section</option>
-                  {sections?.map((s) => (
+                  {sectionsData?.sections?.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.name}
                     </option>
@@ -200,22 +202,22 @@ export default function AddMemberPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="joinDate">Join Date</Label>
+                <Label htmlFor="dateJoined">Join Date</Label>
                 <Input
-                  id="joinDate"
-                  name="joinDate"
+                  id="dateJoined"
+                  name="dateJoined"
                   type="date"
-                  value={form.joinDate}
+                  value={form.dateJoined}
                   onChange={handleChange}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
+                <Label htmlFor="residentialAddress">Address</Label>
                 <Input
-                  id="address"
-                  name="address"
-                  value={form.address}
+                  id="residentialAddress"
+                  name="residentialAddress"
+                  value={form.residentialAddress}
                   onChange={handleChange}
                   placeholder="Enter address"
                 />

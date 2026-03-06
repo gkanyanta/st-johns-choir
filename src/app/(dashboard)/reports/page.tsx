@@ -13,12 +13,11 @@ import { Download } from "lucide-react";
 import { format } from "date-fns";
 import { useApi } from "@/lib/hooks";
 import {
-  ATTENDANCE_STATUS_LABELS,
-  ATTENDANCE_STATUS_COLORS,
   PENALTY_TYPE_LABELS,
   PENALTY_STATUS_LABELS,
   PENALTY_STATUS_COLORS,
   PAYMENT_CATEGORY_LABELS,
+  PAYMENT_METHOD_LABELS,
 } from "@/lib/constants";
 
 interface Section {
@@ -169,7 +168,7 @@ function PenaltyReport() {
         <>
           <div className="grid grid-cols-2 gap-3">
             <Card><CardContent className="p-3 text-center">
-              <div className="text-2xl font-bold text-red-600">K{String(report.summary.totalOutstanding ?? 0)}</div>
+              <div className="text-2xl font-bold text-red-600">K{String(report.summary.totalBalance ?? 0)}</div>
               <div className="text-xs text-gray-500">Outstanding</div>
             </CardContent></Card>
             <Card><CardContent className="p-3 text-center">
@@ -188,9 +187,11 @@ function PenaltyReport() {
             {report.data.map((r, i) => (
               <div key={i} className="flex items-center justify-between p-3 bg-white rounded-lg border text-sm">
                 <div>
-                  <span className="font-medium">{String(r.memberName)}</span>
+                  <span className="font-medium">
+                    {r.member ? `${String((r.member as Record<string, unknown>).firstName)} ${String((r.member as Record<string, unknown>).lastName)}` : "Unknown"}
+                  </span>
                   <div className="text-xs text-gray-500">
-                    {PENALTY_TYPE_LABELS[String(r.type)] || String(r.type)} - K{String(r.amount)}
+                    {PENALTY_TYPE_LABELS[String(r.penaltyType)] || String(r.penaltyType)} - K{String(r.amount)}
                   </div>
                 </div>
                 <Badge className={PENALTY_STATUS_COLORS[String(r.status)] || ""}>
@@ -246,7 +247,7 @@ function PaymentReport() {
       {report && (
         <>
           <Card><CardContent className="p-3 text-center">
-            <div className="text-2xl font-bold text-green-600">K{String(report.summary.totalCollected ?? 0)}</div>
+            <div className="text-2xl font-bold text-green-600">K{String(report.summary.totalPaid ?? 0)}</div>
             <div className="text-xs text-gray-500">Total Collected</div>
           </CardContent></Card>
 
@@ -260,14 +261,16 @@ function PaymentReport() {
             {report.data.map((r, i) => (
               <div key={i} className="flex items-center justify-between p-3 bg-white rounded-lg border text-sm">
                 <div>
-                  <span className="font-medium">{String(r.memberName)}</span>
+                  <span className="font-medium">
+                    {r.member ? `${String((r.member as Record<string, unknown>).firstName)} ${String((r.member as Record<string, unknown>).lastName)}` : "Unknown"}
+                  </span>
                   <div className="text-xs text-gray-500">
-                    {PAYMENT_CATEGORY_LABELS[String(r.category)] || String(r.category)} - {String(r.method)}
+                    {PAYMENT_CATEGORY_LABELS[String(r.category)] || String(r.category)} - {PAYMENT_METHOD_LABELS[String(r.paymentMethod)] || String(r.paymentMethod)}
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="font-medium">K{String(r.amountPaid)}</div>
-                  <div className="text-xs text-gray-500">{r.date ? format(new Date(String(r.date)), "MMM d") : ""}</div>
+                  <div className="text-xs text-gray-500">{r.paymentDate ? format(new Date(String(r.paymentDate)), "MMM d") : ""}</div>
                 </div>
               </div>
             ))}

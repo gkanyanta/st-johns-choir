@@ -7,7 +7,6 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-// Using native selects for simplicity and mobile compatibility
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -30,14 +29,15 @@ interface Member {
 
 interface MembersResponse {
   members: Member[];
-  total: number;
-  page: number;
-  totalPages: number;
+  pagination: {
+    page: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 interface SectionsResponse {
-  id: string;
-  name: string;
+  sections: { id: string; name: string }[];
 }
 
 export default function MembersPage() {
@@ -61,13 +61,13 @@ export default function MembersPage() {
     [debouncedSearch, section, status, page]
   );
 
-  const { data: sections } = useApi<SectionsResponse[]>("/api/sections");
+  const { data: sectionsData } = useApi<SectionsResponse>("/api/sections");
 
   return (
     <div className="space-y-4">
       <PageHeader
         title="Members"
-        description={`${data?.total ?? 0} total members`}
+        description={`${data?.pagination?.total ?? 0} total members`}
         actionLabel="Add Member"
         actionHref="/members/new"
       />
@@ -95,7 +95,7 @@ export default function MembersPage() {
           className="h-10 rounded-lg border border-gray-200 px-3 text-sm bg-white min-w-[130px]"
         >
           <option value="">All Sections</option>
-          {(sections as { sections: { id: string; name: string }[] } | null)?.sections?.map((s: { id: string; name: string }) => (
+          {sectionsData?.sections?.map((s) => (
             <option key={s.id} value={s.id}>
               {s.name}
             </option>
@@ -174,10 +174,10 @@ export default function MembersPage() {
           )}
 
           {/* Pagination */}
-          {data.totalPages > 1 && (
+          {data.pagination.totalPages > 1 && (
             <div className="flex items-center justify-between pt-4">
               <p className="text-sm text-gray-500">
-                Page {data.page} of {data.totalPages}
+                Page {data.pagination.page} of {data.pagination.totalPages}
               </p>
               <div className="flex gap-2">
                 <Button
@@ -192,8 +192,8 @@ export default function MembersPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
-                  disabled={page >= data.totalPages}
+                  onClick={() => setPage((p) => Math.min(data.pagination.totalPages, p + 1))}
+                  disabled={page >= data.pagination.totalPages}
                 >
                   Next
                   <ChevronRight className="h-4 w-4" />

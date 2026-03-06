@@ -38,19 +38,23 @@ export function useApi<T>(url: string | null, deps: unknown[] = []) {
 }
 
 export function useAuth() {
-  const { data: user, loading, error, refetch } = useApi<{
-    id: string;
-    email: string;
-    username: string;
-    role: string;
-    memberId: string | null;
-    member: {
+  const { data, loading, error, refetch } = useApi<{
+    user: {
       id: string;
-      firstName: string;
-      lastName: string;
-      section: { id: string; name: string };
-    } | null;
+      email: string;
+      username: string;
+      role: string;
+      memberId: string | null;
+      member: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        section: { id: string; name: string };
+      } | null;
+    };
   }>("/api/auth/me");
+
+  const user = data?.user ?? null;
 
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });

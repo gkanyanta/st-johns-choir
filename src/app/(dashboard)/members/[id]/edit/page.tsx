@@ -14,11 +14,6 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/shared/loading";
 import { MEMBER_STATUS_LABELS } from "@/lib/constants";
 
-interface Section {
-  id: string;
-  name: string;
-}
-
 interface MemberDetail {
   id: string;
   firstName: string;
@@ -27,12 +22,20 @@ interface MemberDetail {
   phone: string | null;
   dateOfBirth: string | null;
   gender: string | null;
-  address: string | null;
+  residentialAddress: string | null;
   status: string;
-  joinDate: string | null;
+  dateJoined: string | null;
   notes: string | null;
   sectionId: string | null;
   section: { id: string; name: string } | null;
+}
+
+interface MemberResponse {
+  member: MemberDetail;
+}
+
+interface SectionsResponse {
+  sections: { id: string; name: string }[];
 }
 
 export default function EditMemberPage() {
@@ -40,8 +43,9 @@ export default function EditMemberPage() {
   const router = useRouter();
   const id = params.id as string;
 
-  const { data: member, loading: memberLoading } = useApi<MemberDetail>(`/api/members/${id}`);
-  const { data: sections } = useApi<Section[]>("/api/sections");
+  const { data: memberData, loading: memberLoading } = useApi<MemberResponse>(`/api/members/${id}`);
+  const member = memberData?.member ?? null;
+  const { data: sectionsData } = useApi<SectionsResponse>("/api/sections");
 
   const [form, setForm] = useState({
     firstName: "",
@@ -50,10 +54,10 @@ export default function EditMemberPage() {
     phone: "",
     dateOfBirth: "",
     gender: "",
-    address: "",
+    residentialAddress: "",
     sectionId: "",
     status: "ACTIVE",
-    joinDate: "",
+    dateJoined: "",
     notes: "",
   });
 
@@ -69,10 +73,10 @@ export default function EditMemberPage() {
         phone: member.phone || "",
         dateOfBirth: member.dateOfBirth ? member.dateOfBirth.split("T")[0] : "",
         gender: member.gender || "",
-        address: member.address || "",
+        residentialAddress: member.residentialAddress || "",
         sectionId: member.sectionId || member.section?.id || "",
         status: member.status || "ACTIVE",
-        joinDate: member.joinDate ? member.joinDate.split("T")[0] : "",
+        dateJoined: member.dateJoined ? member.dateJoined.split("T")[0] : "",
         notes: member.notes || "",
       });
     }
@@ -96,11 +100,12 @@ export default function EditMemberPage() {
         body: JSON.stringify({
           ...form,
           dateOfBirth: form.dateOfBirth || undefined,
-          joinDate: form.joinDate || undefined,
+          dateJoined: form.dateJoined || undefined,
           email: form.email || undefined,
           phone: form.phone || undefined,
-          address: form.address || undefined,
+          residentialAddress: form.residentialAddress || undefined,
           notes: form.notes || undefined,
+          gender: form.gender || undefined,
         }),
       });
 
@@ -167,12 +172,13 @@ export default function EditMemberPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone</Label>
+                <Label htmlFor="phone">Phone *</Label>
                 <Input
                   id="phone"
                   name="phone"
                   value={form.phone}
                   onChange={handleChange}
+                  required
                 />
               </div>
 
@@ -188,8 +194,8 @@ export default function EditMemberPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="gender">Gender</Label>
-                <Select id="gender" name="gender" value={form.gender} onChange={handleChange}>
+                <Label htmlFor="gender">Gender *</Label>
+                <Select id="gender" name="gender" value={form.gender} onChange={handleChange} required>
                   <option value="">Select gender</option>
                   <option value="MALE">Male</option>
                   <option value="FEMALE">Female</option>
@@ -206,7 +212,7 @@ export default function EditMemberPage() {
                   required
                 >
                   <option value="">Select section</option>
-                  {sections?.map((s) => (
+                  {sectionsData?.sections?.map((s) => (
                     <option key={s.id} value={s.id}>
                       {s.name}
                     </option>
@@ -226,22 +232,22 @@ export default function EditMemberPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="joinDate">Join Date</Label>
+                <Label htmlFor="dateJoined">Join Date</Label>
                 <Input
-                  id="joinDate"
-                  name="joinDate"
+                  id="dateJoined"
+                  name="dateJoined"
                   type="date"
-                  value={form.joinDate}
+                  value={form.dateJoined}
                   onChange={handleChange}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
+                <Label htmlFor="residentialAddress">Address</Label>
                 <Input
-                  id="address"
-                  name="address"
-                  value={form.address}
+                  id="residentialAddress"
+                  name="residentialAddress"
+                  value={form.residentialAddress}
                   onChange={handleChange}
                 />
               </div>

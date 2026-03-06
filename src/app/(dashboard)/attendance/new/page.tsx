@@ -14,14 +14,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Spinner } from "@/components/shared/loading";
 import { EVENT_TYPE_LABELS } from "@/lib/constants";
 
-interface Section {
-  id: string;
-  name: string;
+interface SectionsResponse {
+  sections: { id: string; name: string }[];
 }
 
 export default function NewAttendanceSessionPage() {
   const router = useRouter();
-  const { data: sections } = useApi<Section[]>("/api/sections");
+  const { data: sectionsData } = useApi<SectionsResponse>("/api/sections");
+  const sections = sectionsData?.sections ?? [];
 
   const [form, setForm] = useState({
     date: new Date().toISOString().split("T")[0],
@@ -73,8 +73,8 @@ export default function NewAttendanceSessionPage() {
         throw new Error(data.error || "Failed to create session");
       }
 
-      const session = await res.json();
-      router.push(`/attendance/${session.id}`);
+      const result = await res.json();
+      router.push(`/attendance/${result.session.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -160,7 +160,7 @@ export default function NewAttendanceSessionPage() {
             </div>
 
             {/* Section Filter */}
-            {sections && sections.length > 0 && (
+            {sections.length > 0 && (
               <div className="space-y-2">
                 <Label>Sections (leave empty for all members)</Label>
                 <div className="flex flex-wrap gap-3">

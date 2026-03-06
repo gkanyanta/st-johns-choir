@@ -19,7 +19,7 @@ export default function NewEventPage() {
     title: "",
     eventType: "SPECIAL_EVENT",
     date: "",
-    startTime: "",
+    time: "",
     venue: "",
     description: "",
     notes: "",
@@ -45,7 +45,7 @@ export default function NewEventPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          startTime: form.startTime || undefined,
+          time: form.time || undefined,
           venue: form.venue || undefined,
           description: form.description || undefined,
           notes: form.notes || undefined,
@@ -119,12 +119,12 @@ export default function NewEventPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="startTime">Start Time</Label>
+                <Label htmlFor="time">Start Time</Label>
                 <Input
-                  id="startTime"
-                  name="startTime"
+                  id="time"
+                  name="time"
                   type="time"
-                  value={form.startTime}
+                  value={form.time}
                   onChange={handleChange}
                 />
               </div>

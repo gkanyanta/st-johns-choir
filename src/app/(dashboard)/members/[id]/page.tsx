@@ -44,9 +44,9 @@ interface MemberDetail {
   phone: string | null;
   dateOfBirth: string | null;
   gender: string | null;
-  address: string | null;
+  residentialAddress: string | null;
   status: string;
-  joinDate: string | null;
+  dateJoined: string | null;
   notes: string | null;
   section: { id: string; name: string } | null;
   attendanceRecords: {
@@ -62,29 +62,34 @@ interface MemberDetail {
   }[];
   penalties: {
     id: string;
-    type: string;
-    amount: number;
-    amountPaid: number;
-    balance: number;
+    penaltyType: string;
+    amount: string | number;
+    amountPaid: string | number;
+    balance: string | number;
     status: string;
     reason: string | null;
     createdAt: string;
   }[];
   payments: {
     id: string;
-    amount: number;
+    amountPaid: string | number;
     category: string;
-    method: string;
+    paymentMethod: string;
     reference: string | null;
     notes: string | null;
     paymentDate: string;
   }[];
 }
 
+interface MemberResponse {
+  member: MemberDetail;
+}
+
 export default function MemberProfilePage() {
   const params = useParams();
   const id = params.id as string;
-  const { data: member, loading, error } = useApi<MemberDetail>(`/api/members/${id}`);
+  const { data, loading, error } = useApi<MemberResponse>(`/api/members/${id}`);
+  const member = data?.member ?? null;
 
   if (loading) return <PageLoading />;
   if (error) return <div className="p-4 text-red-600">Error: {error}</div>;
@@ -141,16 +146,16 @@ export default function MemberProfilePage() {
                     {member.phone}
                   </div>
                 )}
-                {member.address && (
+                {member.residentialAddress && (
                   <div className="flex items-center gap-2 text-gray-600">
                     <MapPin className="h-4 w-4 text-gray-400" />
-                    {member.address}
+                    {member.residentialAddress}
                   </div>
                 )}
-                {member.joinDate && (
+                {member.dateJoined && (
                   <div className="flex items-center gap-2 text-gray-600">
                     <Calendar className="h-4 w-4 text-gray-400" />
-                    Joined {format(new Date(member.joinDate), "MMM d, yyyy")}
+                    Joined {format(new Date(member.dateJoined), "MMM d, yyyy")}
                   </div>
                 )}
                 {member.dateOfBirth && (
@@ -260,7 +265,7 @@ export default function MemberProfilePage() {
                     >
                       <div>
                         <p className="text-sm font-medium">
-                          {PENALTY_TYPE_LABELS[penalty.type] || penalty.type}
+                          {PENALTY_TYPE_LABELS[penalty.penaltyType] || penalty.penaltyType}
                         </p>
                         {penalty.reason && (
                           <p className="text-xs text-gray-500">{penalty.reason}</p>
@@ -270,9 +275,9 @@ export default function MemberProfilePage() {
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-medium">ZMW {penalty.amount.toFixed(2)}</p>
-                        {penalty.balance > 0 && (
-                          <p className="text-xs text-red-500">Balance: ZMW {penalty.balance.toFixed(2)}</p>
+                        <p className="text-sm font-medium">ZMW {Number(penalty.amount).toFixed(2)}</p>
+                        {Number(penalty.balance) > 0 && (
+                          <p className="text-xs text-red-500">Balance: ZMW {Number(penalty.balance).toFixed(2)}</p>
                         )}
                         <Badge className={PENALTY_STATUS_COLORS[penalty.status] || ""}>
                           {PENALTY_STATUS_LABELS[penalty.status] || penalty.status}
@@ -311,7 +316,7 @@ export default function MemberProfilePage() {
                           {PAYMENT_CATEGORY_LABELS[payment.category] || payment.category}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {PAYMENT_METHOD_LABELS[payment.method] || payment.method}
+                          {PAYMENT_METHOD_LABELS[payment.paymentMethod] || payment.paymentMethod}
                           {payment.reference && ` - ${payment.reference}`}
                         </p>
                         <p className="text-xs text-gray-400">
@@ -319,7 +324,7 @@ export default function MemberProfilePage() {
                         </p>
                       </div>
                       <p className="text-sm font-semibold text-green-700">
-                        ZMW {payment.amount.toFixed(2)}
+                        ZMW {Number(payment.amountPaid).toFixed(2)}
                       </p>
                     </div>
                   ))}

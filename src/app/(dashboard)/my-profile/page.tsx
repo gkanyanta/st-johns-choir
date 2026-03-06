@@ -91,9 +91,10 @@ export default function MyProfilePage() {
   const { user, loading: authLoading } = useAuth();
 
   const memberId = user?.memberId;
-  const { data: member, loading: memberLoading } = useApi<MemberDetail>(
+  const { data: memberData, loading: memberLoading } = useApi<{ member: MemberDetail }>(
     memberId ? `/api/members/${memberId}` : null
   );
+  const member = memberData?.member ?? null;
 
   const { data: announcementsData } = useApi<{ announcements: Announcement[] }>(
     "/api/announcements"

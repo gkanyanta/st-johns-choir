@@ -17,7 +17,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Plus, Settings as SettingsIcon } from "lucide-react";
@@ -78,7 +77,7 @@ export default function SettingsPage() {
       const res = await fetch("/api/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ settings }),
+        body: JSON.stringify(settings),
       });
       if (!res.ok) throw new Error("Failed to save settings");
       setSaveMessage({ type: "success", text: "Settings saved successfully!" });
@@ -219,13 +218,11 @@ export default function SettingsPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-base">Penalty Rules</CardTitle>
+            <Button size="sm" onClick={() => setRuleDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" />
+              Add Rule
+            </Button>
             <Dialog open={ruleDialogOpen} onOpenChange={setRuleDialogOpen}>
-              <DialogTrigger>
-                <Button size="sm" onClick={() => setRuleDialogOpen(true)}>
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add Rule
-                </Button>
-              </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Add Penalty Rule</DialogTitle>
@@ -333,13 +330,11 @@ export default function SettingsPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-base">Choir Sections</CardTitle>
+            <Button size="sm" onClick={() => setSectionDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" />
+              Add Section
+            </Button>
             <Dialog open={sectionDialogOpen} onOpenChange={setSectionDialogOpen}>
-              <DialogTrigger>
-                <Button size="sm" onClick={() => setSectionDialogOpen(true)}>
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add Section
-                </Button>
-              </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Add Section</DialogTitle>

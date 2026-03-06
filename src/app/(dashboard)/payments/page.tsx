@@ -19,9 +19,9 @@ import {
 
 interface Payment {
   id: string;
-  amount: number;
+  amountPaid: string | number;
   category: string;
-  method: string;
+  paymentMethod: string;
   reference: string | null;
   notes: string | null;
   paymentDate: string;
@@ -34,7 +34,7 @@ interface Payment {
 
 interface PaymentsResponse {
   payments: Payment[];
-  total: number;
+  pagination: { total: number };
 }
 
 export default function PaymentsPage() {
@@ -45,7 +45,7 @@ export default function PaymentsPage() {
 
   const queryParams = new URLSearchParams();
   if (category) queryParams.set("category", category);
-  if (method) queryParams.set("method", method);
+  if (method) queryParams.set("paymentMethod", method);
   if (dateFrom) queryParams.set("dateFrom", dateFrom);
   if (dateTo) queryParams.set("dateTo", dateTo);
 
@@ -58,7 +58,7 @@ export default function PaymentsPage() {
     <div className="space-y-4">
       <PageHeader
         title="Payments"
-        description={`${data?.total ?? 0} total payments`}
+        description={`${data?.pagination?.total ?? 0} total payments`}
         actionLabel="Record Payment"
         actionHref="/payments/new"
       />
@@ -125,7 +125,7 @@ export default function PaymentsPage() {
                             {PAYMENT_CATEGORY_LABELS[payment.category] || payment.category}
                           </Badge>
                           <Badge variant="outline">
-                            {PAYMENT_METHOD_LABELS[payment.method] || payment.method}
+                            {PAYMENT_METHOD_LABELS[payment.paymentMethod] || payment.paymentMethod}
                           </Badge>
                         </div>
                         {payment.reference && (
@@ -136,7 +136,7 @@ export default function PaymentsPage() {
                         </p>
                       </div>
                       <p className="text-sm font-bold text-green-700">
-                        ZMW {payment.amount.toFixed(2)}
+                        ZMW {Number(payment.amountPaid).toFixed(2)}
                       </p>
                     </div>
                   </CardContent>

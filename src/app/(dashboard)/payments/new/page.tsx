@@ -16,7 +16,6 @@ import {
   PAYMENT_CATEGORY_LABELS,
   PAYMENT_METHOD_LABELS,
   PENALTY_TYPE_LABELS,
-  PENALTY_STATUS_LABELS,
 } from "@/lib/constants";
 
 interface Member {
@@ -31,9 +30,9 @@ interface MembersResponse {
 
 interface Penalty {
   id: string;
-  type: string;
-  amount: number;
-  balance: number;
+  penaltyType: string;
+  amount: string | number;
+  balance: string | number;
   status: string;
   reason: string | null;
 }
@@ -50,7 +49,7 @@ export default function NewPaymentPage() {
     memberId: "",
     category: "PENALTY_PAYMENT",
     amount: "",
-    method: "CASH",
+    paymentMethod: "CASH",
     reference: "",
     notes: "",
     paymentDate: new Date().toISOString().split("T")[0],
@@ -63,7 +62,7 @@ export default function NewPaymentPage() {
   // Fetch penalties when member is selected and category is penalty payment
   const { data: penaltiesData } = useApi<PenaltiesResponse>(
     form.memberId && form.category === "PENALTY_PAYMENT"
-      ? `/api/penalties?memberId=${form.memberId}&status=UNPAID,PARTIALLY_PAID`
+      ? `/api/penalties?memberId=${form.memberId}&status=UNPAID`
       : null,
     [form.memberId, form.category]
   );
@@ -87,7 +86,7 @@ export default function NewPaymentPage() {
     if (form.category === "PENALTY_PAYMENT" && penaltiesData?.penalties) {
       const total = penaltiesData.penalties
         .filter((p) => selectedPenaltyIds.includes(p.id))
-        .reduce((sum, p) => sum + p.balance, 0);
+        .reduce((sum, p) => sum + Number(p.balance), 0);
       if (total > 0) {
         setForm((prev) => ({ ...prev, amount: total.toFixed(2) }));
       }
@@ -100,15 +99,20 @@ export default function NewPaymentPage() {
     setError(null);
 
     try {
+      const amountValue = parseFloat(form.amount);
       const res = await fetch("/api/payments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...form,
-          amount: parseFloat(form.amount),
+          memberId: form.memberId,
+          category: form.category,
+          amountDue: amountValue,
+          amountPaid: amountValue,
+          paymentMethod: form.paymentMethod,
+          paymentDate: form.paymentDate,
           reference: form.reference || undefined,
           notes: form.notes || undefined,
-          penaltyIds: selectedPenaltyIds.length > 0 ? selectedPenaltyIds : undefined,
+          penaltyId: selectedPenaltyIds.length > 0 ? selectedPenaltyIds[0] : undefined,
         }),
       });
 
@@ -176,11 +180,11 @@ export default function NewPaymentPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="method">Payment Method *</Label>
+                <Label htmlFor="paymentMethod">Payment Method *</Label>
                 <Select
-                  id="method"
-                  name="method"
-                  value={form.method}
+                  id="paymentMethod"
+                  name="paymentMethod"
+                  value={form.paymentMethod}
                   onChange={handleChange}
                   required
                 >
@@ -249,7 +253,7 @@ export default function NewPaymentPage() {
                           />
                           <div>
                             <p className="text-sm font-medium">
-                              {PENALTY_TYPE_LABELS[penalty.type] || penalty.type}
+                              {PENALTY_TYPE_LABELS[penalty.penaltyType] || penalty.penaltyType}
                             </p>
                             {penalty.reason && (
                               <p className="text-xs text-gray-500">{penalty.reason}</p>
@@ -257,7 +261,7 @@ export default function NewPaymentPage() {
                           </div>
                         </div>
                         <p className="text-sm font-medium text-red-600">
-                          ZMW {penalty.balance.toFixed(2)}
+                          ZMW {Number(penalty.balance).toFixed(2)}
                         </p>
                       </label>
                     ))}

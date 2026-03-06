@@ -25,7 +25,6 @@ import {
 } from "lucide-react";
 import {
   EVENT_TYPE_LABELS,
-  ATTENDANCE_STATUS_LABELS,
 } from "@/lib/constants";
 
 type AttendanceStatus = "PRESENT" | "LATE" | "ABSENT" | "EXCUSED";
@@ -227,11 +226,13 @@ export default function MarkAttendancePage() {
 
       setSaveMessage({ type: "success", text: "Attendance saved successfully!" });
       setTimeout(() => setSaveMessage(null), 3000);
+      return true;
     } catch (err) {
       setSaveMessage({
         type: "error",
         text: err instanceof Error ? err.message : "Failed to save",
       });
+      return false;
     } finally {
       setSaving(false);
     }
@@ -245,7 +246,8 @@ export default function MarkAttendancePage() {
     setFinalizing(true);
     try {
       // Save first
-      await handleSave();
+      const saved = await handleSave();
+      if (!saved) throw new Error("Failed to save attendance before finalizing");
 
       const res = await fetch(`/api/attendance/sessions/${id}`, {
         method: "PATCH",

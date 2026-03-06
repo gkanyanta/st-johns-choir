@@ -21,7 +21,7 @@ interface Event {
   title: string;
   eventType: string;
   date: string;
-  startTime: string | null;
+  time: string | null;
   venue: string | null;
   status: string;
   description: string | null;
@@ -29,7 +29,7 @@ interface Event {
 
 interface EventsResponse {
   events: Event[];
-  total: number;
+  pagination: { total: number };
 }
 
 export default function EventsPage() {
@@ -49,7 +49,7 @@ export default function EventsPage() {
     <div className="space-y-4">
       <PageHeader
         title="Events"
-        description={`${data?.total ?? 0} events`}
+        description={`${data?.pagination?.total ?? 0} events`}
         actionLabel="New Event"
         actionHref="/events/new"
       />
@@ -104,10 +104,10 @@ export default function EventsPage() {
                             <Calendar className="h-3 w-3" />
                             {format(new Date(event.date), "MMM d, yyyy")}
                           </span>
-                          {event.startTime && (
+                          {event.time && (
                             <span className="flex items-center gap-1">
                               <Clock className="h-3 w-3" />
-                              {event.startTime}
+                              {event.time}
                             </span>
                           )}
                           {event.venue && (

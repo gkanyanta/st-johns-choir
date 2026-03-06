@@ -22,7 +22,7 @@ interface Announcement {
 
 interface AnnouncementsResponse {
   announcements: Announcement[];
-  total: number;
+  pagination: { total: number };
 }
 
 export default function AnnouncementsPage() {
@@ -32,7 +32,7 @@ export default function AnnouncementsPage() {
     <div className="space-y-4">
       <PageHeader
         title="Announcements"
-        description={`${data?.total ?? 0} announcements`}
+        description={`${data?.pagination?.total ?? 0} announcements`}
         actionLabel="New Announcement"
         actionHref="/announcements/new"
       />

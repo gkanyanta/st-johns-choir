@@ -19,10 +19,10 @@ import {
 
 interface Penalty {
   id: string;
-  type: string;
-  amount: number;
-  amountPaid: number;
-  balance: number;
+  penaltyType: string;
+  amount: string | number;
+  amountPaid: string | number;
+  balance: string | number;
   status: string;
   reason: string | null;
   createdAt: string;
@@ -35,7 +35,7 @@ interface Penalty {
 
 interface PenaltiesResponse {
   penalties: Penalty[];
-  total: number;
+  pagination: { total: number };
 }
 
 export default function PenaltiesPage() {
@@ -45,7 +45,7 @@ export default function PenaltiesPage() {
 
   const queryParams = new URLSearchParams();
   if (statusFilter) queryParams.set("status", statusFilter);
-  if (typeFilter) queryParams.set("type", typeFilter);
+  if (typeFilter) queryParams.set("penaltyType", typeFilter);
   if (search) queryParams.set("search", search);
 
   const { data, loading, error } = useApi<PenaltiesResponse>(
@@ -53,13 +53,13 @@ export default function PenaltiesPage() {
     [statusFilter, typeFilter, search]
   );
 
-  const totalAmount = data?.penalties.reduce((sum, p) => sum + p.amount, 0) ?? 0;
-  const totalBalance = data?.penalties.reduce((sum, p) => sum + p.balance, 0) ?? 0;
-  const totalPaid = data?.penalties.reduce((sum, p) => sum + p.amountPaid, 0) ?? 0;
+  const totalAmount = data?.penalties.reduce((sum, p) => sum + Number(p.amount), 0) ?? 0;
+  const totalBalance = data?.penalties.reduce((sum, p) => sum + Number(p.balance), 0) ?? 0;
+  const totalPaid = data?.penalties.reduce((sum, p) => sum + Number(p.amountPaid), 0) ?? 0;
 
   return (
     <div className="space-y-4">
-      <PageHeader title="Penalties" description={`${data?.total ?? 0} total penalties`} />
+      <PageHeader title="Penalties" description={`${data?.pagination?.total ?? 0} total penalties`} />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-3 gap-3">
@@ -136,7 +136,7 @@ export default function PenaltiesPage() {
                           {penalty.member.firstName} {penalty.member.lastName}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {PENALTY_TYPE_LABELS[penalty.type] || penalty.type}
+                          {PENALTY_TYPE_LABELS[penalty.penaltyType] || penalty.penaltyType}
                         </p>
                         {penalty.reason && (
                           <p className="text-xs text-gray-400">{penalty.reason}</p>
@@ -146,15 +146,15 @@ export default function PenaltiesPage() {
                         </p>
                       </div>
                       <div className="text-right space-y-1">
-                        <p className="text-sm font-semibold">ZMW {penalty.amount.toFixed(2)}</p>
-                        {penalty.amountPaid > 0 && (
+                        <p className="text-sm font-semibold">ZMW {Number(penalty.amount).toFixed(2)}</p>
+                        {Number(penalty.amountPaid) > 0 && (
                           <p className="text-xs text-green-600">
-                            Paid: ZMW {penalty.amountPaid.toFixed(2)}
+                            Paid: ZMW {Number(penalty.amountPaid).toFixed(2)}
                           </p>
                         )}
-                        {penalty.balance > 0 && (
+                        {Number(penalty.balance) > 0 && (
                           <p className="text-xs text-red-600">
-                            Balance: ZMW {penalty.balance.toFixed(2)}
+                            Balance: ZMW {Number(penalty.balance).toFixed(2)}
                           </p>
                         )}
                         <Badge className={PENALTY_STATUS_COLORS[penalty.status] || ""}>

@@ -1,7 +1,8 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { useApi } from "@/lib/hooks";
+import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useApi, useAuth } from "@/lib/hooks";
 import { PageLoading } from "@/components/shared/loading";
 import { EmptyState } from "@/components/shared/empty-state";
 import { PageHeader } from "@/components/shared/page-header";
@@ -10,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import {
   Edit,
@@ -21,6 +23,7 @@ import {
   ClipboardList,
   AlertTriangle,
   CreditCard,
+  Archive,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -87,9 +90,33 @@ interface MemberResponse {
 
 export default function MemberProfilePage() {
   const params = useParams();
+  const router = useRouter();
   const id = params.id as string;
   const { data, loading, error } = useApi<MemberResponse>(`/api/members/${id}`);
+  const { user } = useAuth();
   const member = data?.member ?? null;
+  const [archiving, setArchiving] = useState(false);
+
+  const canManage = user && ["SUPER_ADMIN", "SECRETARY", "CHOIR_DIRECTOR"].includes(user.role);
+
+  const handleArchive = async () => {
+    if (!confirm(`Are you sure you want to archive ${member?.firstName} ${member?.lastName}? They will be removed from active members.`)) {
+      return;
+    }
+    setArchiving(true);
+    try {
+      const res = await fetch(`/api/members/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({ error: "Failed to archive member" }));
+        throw new Error(data.error || "Failed to archive member");
+      }
+      router.push("/members");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to archive member");
+    } finally {
+      setArchiving(false);
+    }
+  };
 
   if (loading) return <PageLoading />;
   if (error) return <div className="p-4 text-red-600">Error: {error}</div>;
@@ -103,7 +130,20 @@ export default function MemberProfilePage() {
         actionLabel="Edit"
         actionHref={`/members/${id}/edit`}
         actionIcon={Edit}
-      />
+      >
+        {canManage && member.status !== "ARCHIVED" && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleArchive}
+            disabled={archiving}
+            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+          >
+            <Archive className="h-4 w-4 mr-1.5" />
+            {archiving ? "Archiving..." : "Archive"}
+          </Button>
+        )}
+      </PageHeader>
 
       {/* Profile Card */}
       <Card>

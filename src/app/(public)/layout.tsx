@@ -58,13 +58,21 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               </Link>
             </nav>
 
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="md:hidden p-2 text-slate-300 hover:text-white"
-            >
-              {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+            {/* Mobile: login + menu button */}
+            <div className="md:hidden flex items-center gap-2">
+              <Link
+                href="/login"
+                className="px-4 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-900 text-xs font-semibold rounded-lg"
+              >
+                Login
+              </Link>
+              <button
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="p-2 text-slate-300 hover:text-white"
+              >
+                {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
+            </div>
           </div>
 
           {/* Mobile menu */}

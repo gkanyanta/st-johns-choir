@@ -66,9 +66,6 @@ function HeroSlideshow() {
           <Image src={slide.image} alt={slide.title} fill className="object-cover" priority={index === 0} />
           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/40 to-slate-900/20" />
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
-            <div className="border border-amber-400/30 rounded-full p-3 mb-5 backdrop-blur-sm bg-amber-500/10">
-              <Music className="h-8 w-8 sm:h-10 sm:w-10 text-amber-400" />
-            </div>
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold text-white drop-shadow-lg tracking-tight">
               {slide.title}
             </h1>

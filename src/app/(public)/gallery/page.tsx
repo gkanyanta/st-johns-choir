@@ -1,16 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Camera, X, ChevronLeft, ChevronRight } from "lucide-react";
 
-const photos = Array.from({ length: 15 }, (_, i) => ({
-  src: `/images/slides/slide-${i + 1}.jpeg`,
-  alt: `Angels Church Choir photo ${i + 1}`,
+interface Photo {
+  id: string;
+  imageUrl: string;
+  caption: string | null;
+}
+
+// Static fallback photos
+const staticPhotos = Array.from({ length: 15 }, (_, i) => ({
+  id: `static-${i}`,
+  imageUrl: `/images/slides/slide-${i + 1}.jpeg`,
+  caption: null,
 }));
 
 export default function GalleryPage() {
+  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [loading, setLoading] = useState(true);
   const [lightbox, setLightbox] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch("/api/public/gallery")
+      .then((r) => r.json())
+      .then((d) => {
+        const dbPhotos = d.photos || [];
+        setPhotos(dbPhotos.length > 0 ? dbPhotos : staticPhotos);
+      })
+      .catch(() => setPhotos(staticPhotos))
+      .finally(() => setLoading(false));
+  }, []);
 
   const openPhoto = (index: number) => setLightbox(index);
   const closePhoto = () => setLightbox(null);
@@ -41,24 +62,35 @@ export default function GalleryPage() {
 
       {/* Gallery Grid */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-          {photos.map((photo, index) => (
-            <button
-              key={index}
-              onClick={() => openPhoto(index)}
-              className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer shadow-sm hover:shadow-md transition-all duration-300"
-            >
-              <Image
-                src={photo.src}
-                alt={photo.alt}
-                fill
-                className="object-cover group-hover:scale-105 transition-transform duration-500"
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              />
-              <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition-all duration-300" />
-            </button>
-          ))}
-        </div>
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-500 mx-auto" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+            {photos.map((photo, index) => (
+              <button
+                key={photo.id}
+                onClick={() => openPhoto(index)}
+                className="relative aspect-square rounded-xl overflow-hidden group cursor-pointer shadow-sm hover:shadow-md transition-all duration-300"
+              >
+                <Image
+                  src={photo.imageUrl}
+                  alt={photo.caption || `Photo ${index + 1}`}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                />
+                <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition-all duration-300" />
+                {photo.caption && (
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <p className="text-white text-xs">{photo.caption}</p>
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Lightbox */}
@@ -90,16 +122,21 @@ export default function GalleryPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <Image
-              src={photos[lightbox].src}
-              alt={photos[lightbox].alt}
+              src={photos[lightbox].imageUrl}
+              alt={photos[lightbox].caption || "Gallery photo"}
               fill
               className="object-contain"
               sizes="90vw"
               priority
             />
           </div>
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60 text-sm">
-            {lightbox + 1} / {photos.length}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-center">
+            <div className="text-white/60 text-sm">
+              {lightbox + 1} / {photos.length}
+            </div>
+            {photos[lightbox].caption && (
+              <p className="text-white/80 text-sm mt-1">{photos[lightbox].caption}</p>
+            )}
           </div>
         </div>
       )}

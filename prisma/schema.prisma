@@ -145,6 +145,7 @@ model Member {
   attendanceRecords   AttendanceRecord[]
   penalties           Penalty[]
   payments            Payment[]
+  leaderRoles         Leader[]
 
   @@map("members")
 }
@@ -391,8 +392,22 @@ model Accolade {
   @@map("accolades")
 }
 
+model GalleryPhoto {
+  id          String   @id @default(uuid())
+  imageUrl    String
+  caption     String?
+  sortOrder   Int      @default(0)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("gallery_photos")
+}
+
 model Leader {
   id          String   @id @default(uuid())
+  memberId    String?
+  member      Member?  @relation(fields: [memberId], references: [id])
   name        String
   position    String
   bio         String?

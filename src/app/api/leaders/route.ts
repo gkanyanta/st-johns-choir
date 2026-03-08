@@ -8,6 +8,7 @@ export async function GET(request: Request) {
 
   const leaders = await prisma.leader.findMany({
     orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    include: { member: { select: { id: true, firstName: true, lastName: true, profilePhoto: true } } },
   });
 
   return jsonResponse({ leaders });
@@ -18,12 +19,20 @@ export async function POST(request: Request) {
   if (session instanceof NextResponse) return session;
 
   const body = await request.json();
-  if (!body.name) return errorResponse("Name is required");
   if (!body.position) return errorResponse("Position is required");
+  if (!body.memberId && !body.name) return errorResponse("Please select a member or provide a name");
+
+  let name = body.name;
+  if (body.memberId) {
+    const member = await prisma.member.findUnique({ where: { id: body.memberId } });
+    if (!member) return errorResponse("Member not found");
+    name = name || `${member.firstName} ${member.lastName}`;
+  }
 
   const leader = await prisma.leader.create({
     data: {
-      name: body.name,
+      memberId: body.memberId || null,
+      name,
       position: body.position,
       bio: body.bio || null,
       imageUrl: body.imageUrl || null,

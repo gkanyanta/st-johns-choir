@@ -1,27 +1,39 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { Users, Plus, Pencil, Trash2, Eye, EyeOff, X } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Users, Plus, Pencil, Trash2, Eye, EyeOff, X, Upload, Image as ImageIcon } from "lucide-react";
+
+interface Member {
+  id: string;
+  firstName: string;
+  lastName: string;
+  profilePhoto: string | null;
+}
 
 interface Leader {
   id: string;
+  memberId: string | null;
   name: string;
   position: string;
   bio: string | null;
   imageUrl: string | null;
   sortOrder: number;
   isPublished: boolean;
+  member: Member | null;
 }
 
-const emptyForm = { name: "", position: "", bio: "", imageUrl: "", sortOrder: 0, isPublished: true };
+const emptyForm = { memberId: "", name: "", position: "", bio: "", imageUrl: "", sortOrder: 0, isPublished: true };
 
 export default function ManageLeadersPage() {
   const [leaders, setLeaders] = useState<Leader[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Leader | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const fetchLeaders = useCallback(() => {
     fetch("/api/leaders")
@@ -31,7 +43,14 @@ export default function ManageLeadersPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => { fetchLeaders(); }, [fetchLeaders]);
+  const fetchMembers = useCallback(() => {
+    fetch("/api/members?status=ACTIVE&limit=500")
+      .then((r) => r.json())
+      .then((d) => setMembers(d.members || []))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => { fetchLeaders(); fetchMembers(); }, [fetchLeaders, fetchMembers]);
 
   const openCreate = () => {
     setEditing(null);
@@ -42,6 +61,7 @@ export default function ManageLeadersPage() {
   const openEdit = (leader: Leader) => {
     setEditing(leader);
     setForm({
+      memberId: leader.memberId || "",
       name: leader.name,
       position: leader.position,
       bio: leader.bio || "",
@@ -52,8 +72,38 @@ export default function ManageLeadersPage() {
     setShowModal(true);
   };
 
+  const handleMemberSelect = (memberId: string) => {
+    const member = members.find((m) => m.id === memberId);
+    setForm({
+      ...form,
+      memberId,
+      name: member ? `${member.firstName} ${member.lastName}` : form.name,
+    });
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      if (res.ok) {
+        const data = await res.json();
+        setForm((prev) => ({ ...prev, imageUrl: data.url }));
+      }
+    } catch {
+      // ignore
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
   const handleSave = async () => {
-    if (!form.name.trim() || !form.position.trim()) return;
+    if (!form.position.trim() || (!form.memberId && !form.name.trim())) return;
     setSaving(true);
     try {
       const url = editing ? `/api/leaders/${editing.id}` : "/api/leaders";
@@ -94,7 +144,7 @@ export default function ManageLeadersPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Leadership</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage choir leadership positions displayed on the About Us page</p>
+          <p className="text-sm text-gray-500 mt-1">Manage choir leadership displayed on the About Us page</p>
         </div>
         <button
           onClick={openCreate}
@@ -112,7 +162,7 @@ export default function ManageLeadersPage() {
         <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
           <Users className="h-12 w-12 text-gray-300 mx-auto mb-3" />
           <h3 className="font-medium text-gray-500">No leaders added yet</h3>
-          <p className="text-sm text-gray-400 mt-1">Add choir leadership positions and their photos</p>
+          <p className="text-sm text-gray-400 mt-1">Add choir leadership positions from your members</p>
           <button onClick={openCreate} className="mt-4 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
             Add First Leader
           </button>
@@ -174,7 +224,7 @@ export default function ManageLeadersPage() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-semibold text-gray-900">{editing ? "Edit Leader" : "Add Leader"}</h2>
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
@@ -184,30 +234,114 @@ export default function ManageLeadersPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputClass} placeholder="e.g. John Banda" />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Select Member *</label>
+                <select
+                  value={form.memberId}
+                  onChange={(e) => handleMemberSelect(e.target.value)}
+                  className={inputClass}
+                >
+                  <option value="">-- Choose a member --</option>
+                  {members.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.firstName} {m.lastName}
+                    </option>
+                  ))}
+                </select>
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className={inputClass}
+                  placeholder="Auto-filled from member"
+                />
+                <p className="text-xs text-gray-400 mt-1">Auto-filled when you select a member. Edit if needed.</p>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Position *</label>
-                <input type="text" value={form.position} onChange={(e) => setForm({ ...form, position: e.target.value })} className={inputClass} placeholder="e.g. Choir Director" />
+                <input
+                  type="text"
+                  value={form.position}
+                  onChange={(e) => setForm({ ...form, position: e.target.value })}
+                  className={inputClass}
+                  placeholder="e.g. Choir Director, Secretary, Soprano Leader"
+                />
               </div>
+
+              {/* Photo Upload */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Photo URL</label>
-                <input type="text" value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} className={inputClass} placeholder="https://example.com/photo.jpg" />
-                <p className="text-xs text-gray-400 mt-1">Paste a link to the leader&apos;s photo</p>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Photo</label>
+                <div className="flex items-start gap-4">
+                  {form.imageUrl ? (
+                    <div className="relative">
+                      <img src={form.imageUrl} alt="Preview" className="h-24 w-24 rounded-lg object-cover border border-gray-200" />
+                      <button
+                        onClick={() => setForm({ ...form, imageUrl: "" })}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="h-24 w-24 rounded-lg bg-gray-50 border-2 border-dashed border-gray-200 flex items-center justify-center">
+                      <ImageIcon className="h-8 w-8 text-gray-300" />
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <input
+                      ref={fileRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileRef.current?.click()}
+                      disabled={uploading}
+                      className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                    >
+                      <Upload className="h-4 w-4" />
+                      {uploading ? "Uploading..." : "Browse Photo"}
+                    </button>
+                    <p className="text-xs text-gray-400 mt-2">JPG, PNG up to 5MB</p>
+                  </div>
+                </div>
               </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
-                <textarea rows={3} value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} className={`${inputClass} resize-none`} placeholder="Brief description..." />
+                <textarea
+                  rows={3}
+                  value={form.bio}
+                  onChange={(e) => setForm({ ...form, bio: e.target.value })}
+                  className={`${inputClass} resize-none`}
+                  placeholder="Brief description..."
+                />
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Sort Order</label>
-                  <input type="number" value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: parseInt(e.target.value) || 0 })} className={inputClass} />
+                  <input
+                    type="number"
+                    value={form.sortOrder}
+                    onChange={(e) => setForm({ ...form, sortOrder: parseInt(e.target.value) || 0 })}
+                    className={inputClass}
+                  />
                 </div>
                 <div className="flex items-end">
                   <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" checked={form.isPublished} onChange={(e) => setForm({ ...form, isPublished: e.target.checked })} className="rounded border-gray-300" />
+                    <input
+                      type="checkbox"
+                      checked={form.isPublished}
+                      onChange={(e) => setForm({ ...form, isPublished: e.target.checked })}
+                      className="rounded border-gray-300"
+                    />
                     <span className="text-sm text-gray-700">Published</span>
                   </label>
                 </div>
@@ -220,7 +354,7 @@ export default function ManageLeadersPage() {
               </button>
               <button
                 onClick={handleSave}
-                disabled={saving || !form.name.trim() || !form.position.trim()}
+                disabled={saving || !form.position.trim() || (!form.memberId && !form.name.trim())}
                 className="px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
               >
                 {saving ? "Saving..." : editing ? "Update" : "Add Leader"}

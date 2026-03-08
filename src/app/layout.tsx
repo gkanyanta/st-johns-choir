@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Choir Manager - St. John's",
+  title: "Choir Manager - Angels Church Choir",
   description: "Church choir membership and attendance management system",
   manifest: "/manifest.json",
   appleWebApp: {

@@ -53,7 +53,7 @@ export default function LoginPage() {
               <Music className="h-8 w-8 text-blue-600" />
             </div>
           </div>
-          <CardTitle className="text-xl">Choir Manager</CardTitle>
+          <CardTitle className="text-xl">Angels Church Choir</CardTitle>
           <CardDescription>Sign in to your account</CardDescription>
         </CardHeader>
         <CardContent>

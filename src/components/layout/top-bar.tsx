@@ -31,7 +31,7 @@ export function TopBar() {
           </Sheet>
           <div className="flex items-center gap-2 md:hidden">
             <Music className="h-5 w-5 text-blue-600" />
-            <span className="font-bold text-sm">Choir Manager</span>
+            <span className="font-bold text-sm">Angels Church Choir</span>
           </div>
         </div>
 

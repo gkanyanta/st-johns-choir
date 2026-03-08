@@ -46,7 +46,7 @@ export function Sidebar() {
       <div className="flex items-center gap-2 h-16 px-4 border-b border-gray-200">
         <Music className="h-7 w-7 text-blue-600" />
         <div className="flex flex-col">
-          <span className="font-bold text-sm text-gray-900">Choir Manager</span>
+          <span className="font-bold text-sm text-gray-900">Angels Church Choir</span>
           <span className="text-xs text-gray-500">{user?.member ? `${user.member.firstName} ${user.member.lastName}` : user?.username}</span>
         </div>
       </div>

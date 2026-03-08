@@ -53,7 +53,7 @@ function HeroSlideshow() {
   return (
     <div
       className="relative w-full overflow-hidden"
-      style={{ minHeight: "420px", maxHeight: "600px", height: "65vh" }}
+      style={{ minHeight: "500px", maxHeight: "800px", height: "80vh" }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >

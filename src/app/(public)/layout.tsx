@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Music, Menu, X, Heart } from "lucide-react";
+import { Menu, X, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
@@ -26,9 +27,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2.5">
-              <div className="rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 p-1.5 shadow-sm">
-                <Music className="h-5 w-5 text-white" />
-              </div>
+              <Image src="/images/ucz-logo.png" alt="UCZ Logo" width={40} height={40} className="rounded-full" />
               <div className="flex flex-col">
                 <span className="font-bold text-base text-white leading-tight">Angels Church</span>
                 <span className="text-[10px] uppercase tracking-[0.2em] text-amber-400/80 font-medium">Choir</span>
@@ -115,9 +114,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="sm:col-span-2 lg:col-span-1">
               <div className="flex items-center gap-2.5 mb-4">
-                <div className="rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 p-1.5">
-                  <Music className="h-5 w-5 text-white" />
-                </div>
+                <Image src="/images/ucz-logo.png" alt="UCZ Logo" width={40} height={40} className="rounded-full" />
                 <div className="flex flex-col">
                   <span className="font-bold text-base leading-tight">Angels Church</span>
                   <span className="text-[10px] uppercase tracking-[0.2em] text-amber-400/80 font-medium">Choir</span>

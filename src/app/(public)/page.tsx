@@ -16,19 +16,24 @@ const slides = [
     subtitle: "Making a joyful noise unto the Lord",
   },
   {
-    image: "/images/slides/slide-2.jpeg",
+    image: "/images/slides/slide-3.jpeg",
+    title: "United in Faith",
+    subtitle: "Together in song, united in purpose",
+  },
+  {
+    image: "/images/slides/slide-5.jpeg",
     title: "Worship in Harmony",
     subtitle: "United voices lifting praises every Sunday",
   },
   {
-    image: "/images/slides/slide-3.jpeg",
-    title: "Voices of Faith",
-    subtitle: "Singing His glory in every season",
+    image: "/images/slides/slide-8.jpeg",
+    title: "Praise & Worship",
+    subtitle: "Glorifying God through music and fellowship",
   },
   {
-    image: "/images/slides/slide-4.jpeg",
+    image: "/images/slides/slide-15.jpeg",
     title: "Join Our Family",
-    subtitle: "Together in song, united in purpose",
+    subtitle: "Singing His glory in every season",
   },
 ];
 

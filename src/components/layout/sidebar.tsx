@@ -17,17 +17,24 @@ import {
   User,
   LogOut,
   Music,
+  Mail,
+  UserPlus,
+  Award,
 } from "lucide-react";
 import { useAuth } from "@/lib/hooks";
 
 const allNavItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard, roles: ["SUPER_ADMIN", "CHOIR_DIRECTOR", "SECRETARY", "TREASURER", "SECTION_LEADER", "MEMBER"] },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["SUPER_ADMIN", "CHOIR_DIRECTOR", "SECRETARY", "TREASURER", "SECTION_LEADER", "MEMBER"] },
   { href: "/members", label: "Members", icon: Users, roles: ["SUPER_ADMIN", "CHOIR_DIRECTOR", "SECRETARY", "SECTION_LEADER"] },
   { href: "/attendance", label: "Attendance", icon: ClipboardCheck, roles: ["SUPER_ADMIN", "CHOIR_DIRECTOR", "SECRETARY", "SECTION_LEADER"] },
   { href: "/penalties", label: "Penalties", icon: AlertTriangle, roles: ["SUPER_ADMIN", "CHOIR_DIRECTOR", "TREASURER"] },
   { href: "/payments", label: "Payments", icon: DollarSign, roles: ["SUPER_ADMIN", "TREASURER"] },
   { href: "/events", label: "Events", icon: CalendarDays, roles: ["SUPER_ADMIN", "CHOIR_DIRECTOR", "SECRETARY", "SECTION_LEADER", "MEMBER"] },
   { href: "/announcements", label: "Announcements", icon: Megaphone, roles: ["SUPER_ADMIN", "CHOIR_DIRECTOR", "SECRETARY", "SECTION_LEADER", "MEMBER"] },
+  { href: "/inquiries", label: "Inquiries", icon: Mail, roles: ["SUPER_ADMIN", "SECRETARY", "CHOIR_DIRECTOR"] },
+  { href: "/applications", label: "Applications", icon: UserPlus, roles: ["SUPER_ADMIN", "SECRETARY", "CHOIR_DIRECTOR"] },
+  { href: "/manage-accolades", label: "Accolades", icon: Award, roles: ["SUPER_ADMIN", "CHOIR_DIRECTOR"] },
+  { href: "/manage-songs", label: "Songs & Media", icon: Music, roles: ["SUPER_ADMIN", "CHOIR_DIRECTOR"] },
   { href: "/reports", label: "Reports", icon: BarChart3, roles: ["SUPER_ADMIN", "CHOIR_DIRECTOR", "SECRETARY", "TREASURER"] },
   { href: "/users", label: "Users", icon: UserCog, roles: ["SUPER_ADMIN"] },
   { href: "/settings", label: "Settings", icon: Settings, roles: ["SUPER_ADMIN"] },
@@ -55,8 +62,8 @@ export function Sidebar() {
         <div className="space-y-1">
           {navItems.map((item) => {
             const isActive =
-              item.href === "/"
-                ? pathname === "/"
+              item.href === "/dashboard"
+                ? pathname === "/dashboard"
                 : pathname.startsWith(item.href);
             return (
               <Link

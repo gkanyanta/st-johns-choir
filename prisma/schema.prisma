@@ -327,3 +327,81 @@ model Setting {
 
   @@map("settings")
 }
+
+enum InquiryStatus {
+  PENDING
+  RESPONDED
+  CLOSED
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWED
+  ACCEPTED
+  REJECTED
+}
+
+model Inquiry {
+  id        String        @id @default(uuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  status    InquiryStatus @default(PENDING)
+  response  String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@map("inquiries")
+}
+
+model MemberApplication {
+  id                String            @id @default(uuid())
+  firstName         String
+  lastName          String
+  email             String
+  phone             String
+  gender            Gender?
+  dateOfBirth       DateTime?
+  residentialAddress String?
+  preferredSection  String?
+  musicalExperience String?
+  message           String?
+  status            ApplicationStatus @default(PENDING)
+  adminNotes        String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@map("member_applications")
+}
+
+model Accolade {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  date        DateTime?
+  category    String?
+  imageUrl    String?
+  isPublished Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("accolades")
+}
+
+model Song {
+  id          String   @id @default(uuid())
+  title       String
+  artist      String?
+  category    String?
+  youtubeUrl  String?
+  description String?
+  isPublished Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("songs")
+}

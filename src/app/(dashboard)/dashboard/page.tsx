@@ -45,19 +45,14 @@ interface DashboardData {
 
 const slides = [
   {
-    image: "/images/slides/slide1.svg",
+    image: "/images/slides/slide-photo1.jpeg",
     title: "Angels Church Choir",
     subtitle: "Making a joyful noise unto the Lord",
   },
   {
-    image: "/images/slides/slide2.svg",
+    image: "/images/slides/slide-photo2.jpeg",
     title: "Worship in Harmony",
     subtitle: "United voices lifting praises every Sunday",
-  },
-  {
-    image: "/images/slides/slide3.svg",
-    title: "Join Our Fellowship",
-    subtitle: "Growing together through music and faith",
   },
 ];
 

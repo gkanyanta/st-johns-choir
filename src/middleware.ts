@@ -1,10 +1,23 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const publicPaths = ["/login", "/api/auth/login"];
+const publicPaths = [
+  "/login",
+  "/api/auth/login",
+  "/api/public",
+  "/inquiry",
+  "/apply",
+  "/accolades",
+  "/songs",
+];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Allow the public homepage
+  if (pathname === "/") {
+    return NextResponse.next();
+  }
 
   // Allow public paths
   if (publicPaths.some((path) => pathname.startsWith(path))) {
@@ -15,6 +28,7 @@ export function middleware(request: NextRequest) {
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/icons") ||
+    pathname.startsWith("/images") ||
     pathname.startsWith("/manifest") ||
     pathname === "/favicon.ico"
   ) {

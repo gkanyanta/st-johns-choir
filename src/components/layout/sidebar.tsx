@@ -35,6 +35,7 @@ const allNavItems = [
   { href: "/applications", label: "Applications", icon: UserPlus, roles: ["SUPER_ADMIN", "SECRETARY", "CHOIR_DIRECTOR"] },
   { href: "/manage-accolades", label: "Accolades", icon: Award, roles: ["SUPER_ADMIN", "CHOIR_DIRECTOR"] },
   { href: "/manage-songs", label: "Songs & Media", icon: Music, roles: ["SUPER_ADMIN", "CHOIR_DIRECTOR"] },
+  { href: "/manage-leaders", label: "Leadership", icon: Users, roles: ["SUPER_ADMIN", "CHOIR_DIRECTOR"] },
   { href: "/reports", label: "Reports", icon: BarChart3, roles: ["SUPER_ADMIN", "CHOIR_DIRECTOR", "SECRETARY", "TREASURER"] },
   { href: "/users", label: "Users", icon: UserCog, roles: ["SUPER_ADMIN"] },
   { href: "/settings", label: "Settings", icon: Settings, roles: ["SUPER_ADMIN"] },

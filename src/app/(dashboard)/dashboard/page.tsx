@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import { useApi, useAuth } from "@/lib/hooks";
 import { PageLoading } from "@/components/shared/loading";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,8 +15,6 @@ import {
   Megaphone,
   Clock,
   TrendingUp,
-  ChevronLeft,
-  ChevronRight,
   Music,
   Heart,
   ArrowRight,
@@ -25,11 +22,9 @@ import {
   BarChart3,
   UserPlus,
   Bell,
-  MapPin,
   Star,
 } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 import { EVENT_TYPE_LABELS } from "@/lib/constants";
 
 interface DashboardData {
@@ -43,19 +38,6 @@ interface DashboardData {
   recentSessions: { id: string; date: string; eventType: string; presentCount: number; totalCount: number }[];
 }
 
-const slides = [
-  {
-    image: "/images/slides/slide-photo1.jpeg",
-    title: "Angels Church Choir",
-    subtitle: "Making a joyful noise unto the Lord",
-  },
-  {
-    image: "/images/slides/slide-photo2.jpeg",
-    title: "Worship in Harmony",
-    subtitle: "United voices lifting praises every Sunday",
-  },
-];
-
 const sectionIcons: Record<string, { bg: string; text: string; border: string }> = {
   Soprano: { bg: "bg-pink-50", text: "text-pink-600", border: "border-pink-200" },
   Alto: { bg: "bg-purple-50", text: "text-purple-600", border: "border-purple-200" },
@@ -68,90 +50,6 @@ function getGreeting() {
   if (hour < 12) return "Good Morning";
   if (hour < 17) return "Good Afternoon";
   return "Good Evening";
-}
-
-function HeroSlideshow() {
-  const [current, setCurrent] = useState(0);
-  const [paused, setPaused] = useState(false);
-
-  const next = useCallback(() => {
-    setCurrent((prev) => (prev + 1) % slides.length);
-  }, []);
-
-  const prev = useCallback(() => {
-    setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
-  }, []);
-
-  useEffect(() => {
-    if (paused) return;
-    const timer = setInterval(next, 5000);
-    return () => clearInterval(timer);
-  }, [paused, next]);
-
-  return (
-    <div
-      className="relative w-full overflow-hidden rounded-2xl shadow-xl -mx-4 sm:-mx-6 md:mx-0"
-      style={{ aspectRatio: "16/7", minHeight: "220px" }}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
-    >
-      {slides.map((slide, index) => (
-        <div
-          key={index}
-          className="absolute inset-0 transition-opacity duration-700 ease-in-out"
-          style={{ opacity: index === current ? 1 : 0 }}
-        >
-          <Image
-            src={slide.image}
-            alt={slide.title}
-            fill
-            className="object-cover"
-            priority={index === 0}
-          />
-          <div className="absolute inset-0 bg-black/30" />
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
-            <div className="bg-white/10 backdrop-blur-sm rounded-full p-3 mb-3 sm:mb-4">
-              <Music className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
-            </div>
-            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-white drop-shadow-lg tracking-tight">
-              {slide.title}
-            </h1>
-            <p className="text-sm sm:text-lg lg:text-xl text-white/90 mt-2 sm:mt-3 max-w-2xl drop-shadow font-light">
-              {slide.subtitle}
-            </p>
-          </div>
-        </div>
-      ))}
-
-      <button
-        onClick={prev}
-        className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white rounded-full p-1.5 sm:p-2 transition-colors"
-        aria-label="Previous slide"
-      >
-        <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-      </button>
-      <button
-        onClick={next}
-        className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white rounded-full p-1.5 sm:p-2 transition-colors"
-        aria-label="Next slide"
-      >
-        <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
-      </button>
-
-      <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-        {slides.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrent(index)}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              index === current ? "w-8 bg-white" : "w-2 bg-white/50"
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
-      </div>
-    </div>
-  );
 }
 
 export default function DashboardPage() {
@@ -170,9 +68,6 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      {/* Hero Slideshow */}
-      <HeroSlideshow />
-
       {/* Welcome Banner */}
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-5 sm:p-6 text-white shadow-md">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

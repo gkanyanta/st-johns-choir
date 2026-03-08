@@ -391,6 +391,20 @@ model Accolade {
   @@map("accolades")
 }
 
+model Leader {
+  id          String   @id @default(uuid())
+  name        String
+  position    String
+  bio         String?
+  imageUrl    String?
+  sortOrder   Int      @default(0)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("leaders")
+}
+
 model Song {
   id          String   @id @default(uuid())
   title       String

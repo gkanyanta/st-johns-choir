@@ -10,6 +10,7 @@ const publicPaths = [
   "/accolades",
   "/songs",
   "/gallery",
+  "/about",
 ];
 
 export function middleware(request: NextRequest) {
